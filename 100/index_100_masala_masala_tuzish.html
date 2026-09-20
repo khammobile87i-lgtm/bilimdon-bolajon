@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌈 Bilimdon bolajon</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#74ebd5,#ACB6E5);min-height:100vh}
+header{text-align:center;color:white;padding:25px 10px}
+header h1{font-size:40px;margin:5px}
+header p{font-size:18px}
+.info-box{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.info{background:white;color:#333;padding:12px 20px;border-radius:20px;font-weight:bold;box-shadow:0 4px 10px #777}
+.container{max-width:850px;margin:20px auto;padding:15px}
+.card,.creator{background:white;padding:30px;border-radius:25px;text-align:center;box-shadow:0 8px 20px #777;margin-bottom:20px}
+.level{color:#6c5ce7;font-size:22px;font-weight:bold}
+.stars{font-size:38px;margin:15px}
+.progress{width:100%;height:20px;background:#ddd;border-radius:20px;overflow:hidden}
+.progress-bar{width:0%;height:100%;background:#00b894;transition:.5s}
+h2{color:#ff6b6b;font-size:28px}
+.question{font-size:23px;line-height:1.5;font-weight:bold}
+input,textarea{width:85%;padding:14px;border:3px solid #74b9ff;border-radius:15px;font-size:18px;margin:8px}
+textarea{height:90px;resize:vertical}
+button{border:none;padding:14px 25px;border-radius:20px;color:white;font-size:18px;cursor:pointer;margin:5px}
+button:hover{transform:scale(1.05)}
+.check{background:#00b894}
+.next{background:#0984e3;display:none}
+.create{background:#6c5ce7}
+.add{background:#e17055}
+.result{min-height:35px;margin:15px;font-size:20px;font-weight:bold}
+.custom-list{text-align:left;max-height:220px;overflow:auto;margin-top:15px}
+.custom-item{background:#f1f2f6;padding:10px;border-radius:12px;margin:7px 0}
+.hidden{display:none}
+footer{text-align:center;color:white;padding:25px}
+.small{font-size:14px;color:#666}
+@media(max-width:600px){header h1{font-size:30px}.card,.creator{padding:20px}.question{font-size:20px}input,textarea{width:100%;margin:8px 0}}
+</style>
+</head>
+<body>
+<header>
+<h1>🌈 Bilimdon bolajon 🌈</h1>
+<p>O‘yna 🎮 — Masala yech 🧮 — Yulduzcha ol ⭐</p>
+<div class="info-box">
+<div class="info">⭐ Ball: <span id="score">0</span></div>
+<div class="info">🏆 Daraja: <span id="level">1</span></div>
+<div class="info">🎯 Masala: <span id="number">1</span>/<span id="total">100</span></div>
+</div>
+</header>
+
+<div class="container">
+<div class="card">
+<div class="level">🌟 Masalalar 🌟</div>
+<div class="stars" id="stars">☆☆☆☆☆</div>
+<div class="progress"><div class="progress-bar" id="progress"></div></div>
+<h2>🧠 Masalani yeching!</h2>
+<p class="question" id="question"></p>
+<input type="number" id="answer" placeholder="Javobni yozing">
+<br>
+<button class="check" onclick="checkAnswer()">✅ Tekshirish</button>
+<button class="next" id="nextButton" onclick="nextQuestion()">➡️ Keyingi masala</button>
+<div class="result" id="result"></div>
+<button class="create" onclick="toggleCreator()">✏️ Men ham masala tuzaman</button>
+</div>
+
+<div class="creator hidden" id="creator">
+<h2>✏️ O‘zingiz masala tuzing</h2>
+<p class="small">Masala matnini va to‘g‘ri javobini kiriting.</p>
+<textarea id="newQuestion" placeholder="Masalan: Anvarda 7 ta olma bor edi. U yana 5 ta oldi. Jami nechta?"></textarea>
+<br>
+<input type="number" id="newAnswer" placeholder="To‘g‘ri javob">
+<br>
+<button class="add" onclick="addQuestion()">➕ Masalani qo‘shish</button>
+<div class="result" id="createResult"></div>
+<div class="custom-list" id="customList"></div>
+</div>
+</div>
+
+<footer>📚 Bilimdon bolajon © 2026</footer>
+
+<script>
+const defaultQuestions = [
+    { text: 'Ali 5 ta olma oldi. Onasi yana 3 ta olma berdi. Jami nechta olma bo‘ldi?', answer: 8 },
+    { text: 'Savatda 12 ta olma bor edi. 4 tasi yeyildi. Nechta olma qoldi?', answer: 8 },
+    { text: 'Madina 6 ta qalam oldi. Unga yana 7 ta qalam berishdi. Jami nechta qalam bo‘ldi?', answer: 13 },
+    { text: 'Bir qutida 5 ta shar bor. 3 ta qutida nechta shar bor?', answer: 15 },
+    { text: '20 ta konfetdan 7 tasi yeyildi. Nechta konfet qoldi?', answer: 13 },
+    { text: 'Bir daraxtda 8 ta qush bor edi. Yana 6 ta qush uchib keldi. Jami nechta qush bo‘ldi?', answer: 14 },
+    { text: '24 ta daftar 6 ta bolaga teng taqsimlandi. Har bir bola nechta daftar oldi?', answer: 4 },
+    { text: '7 × 3 nechaga teng?', answer: 21 },
+    { text: '36 − 18 nechaga teng?', answer: 18 },
+    { text: '25 + 17 nechaga teng?', answer: 42 },
+    { text: '9 + 6 nechaga teng?', answer: 15 },
+    { text: '18 − 9 nechaga teng?', answer: 9 },
+    { text: '4 × 5 nechaga teng?', answer: 20 },
+    { text: '30 ÷ 5 nechaga teng?', answer: 6 },
+    { text: '14 + 8 nechaga teng?', answer: 22 },
+    { text: '27 − 9 nechaga teng?', answer: 18 },
+    { text: '3 × 7 nechaga teng?', answer: 21 },
+    { text: '32 ÷ 4 nechaga teng?', answer: 8 },
+    { text: '16 + 15 nechaga teng?', answer: 31 },
+    { text: '40 − 17 nechaga teng?', answer: 23 },
+    { text: '6 × 4 nechaga teng?', answer: 24 },
+    { text: '45 ÷ 5 nechaga teng?', answer: 9 },
+    { text: '23 + 19 nechaga teng?', answer: 42 },
+    { text: '50 − 26 nechaga teng?', answer: 24 },
+    { text: '8 × 4 nechaga teng?', answer: 32 },
+    { text: '36 ÷ 6 nechaga teng?', answer: 6 },
+    { text: '17 + 24 nechaga teng?', answer: 41 },
+    { text: '60 − 35 nechaga teng?', answer: 25 },
+    { text: '9 × 3 nechaga teng?', answer: 27 },
+    { text: '42 ÷ 7 nechaga teng?', answer: 6 },
+    { text: 'Lola 10 ta gul uzdi. Yana 5 ta gul uzdi. Jami nechta gul bo‘ldi?', answer: 15 },
+    { text: 'Sinfda 25 o‘quvchi bor edi. 3 o‘quvchi chiqib ketdi. Nechta o‘quvchi qoldi?', answer: 22 },
+    { text: 'Har bir savatda 4 tadan olma bor. 6 ta savatda nechta olma bor?', answer: 24 },
+    { text: '18 ta qalam 3 bolaga teng bo‘lindi. Har bir bola nechta qalam oldi?', answer: 6 },
+    { text: 'Boburda 15 ta marka bor edi. U 7 tasini berdi. Nechta marka qoldi?', answer: 8 },
+    { text: 'Kutubxonaga 13 ta yangi kitob keldi. Keyin yana 9 ta keldi. Jami nechta kitob keldi?', answer: 22 },
+    { text: 'Bir haftada 7 kun bor. 4 haftada nechta kun bor?', answer: 28 },
+    { text: '5 ta qutining har birida 6 tadan daftar bor. Jami nechta daftar?', answer: 30 },
+    { text: '28 ta gul 4 ta vazaga teng joylandi. Har bir vazada nechta gul?', answer: 7 },
+    { text: 'Dilnozada 30 ming so‘m bor edi. 12 ming so‘m sarfladi. Necha ming so‘m qoldi?', answer: 18 },
+    { text: '11 + 18 nechaga teng?', answer: 29 },
+    { text: '35 − 16 nechaga teng?', answer: 19 },
+    { text: '2 × 9 nechaga teng?', answer: 18 },
+    { text: '27 ÷ 3 nechaga teng?', answer: 9 },
+    { text: '16 + 27 nechaga teng?', answer: 43 },
+    { text: '54 − 29 nechaga teng?', answer: 25 },
+    { text: '7 × 6 nechaga teng?', answer: 42 },
+    { text: '48 ÷ 8 nechaga teng?', answer: 6 },
+    { text: '29 + 14 nechaga teng?', answer: 43 },
+    { text: '70 − 32 nechaga teng?', answer: 38 },
+    { text: '8 × 7 nechaga teng?', answer: 56 },
+    { text: '63 ÷ 9 nechaga teng?', answer: 7 },
+    { text: '18 + 25 nechaga teng?', answer: 43 },
+    { text: '80 − 45 nechaga teng?', answer: 35 },
+    { text: '9 × 6 nechaga teng?', answer: 54 },
+    { text: '56 ÷ 7 nechaga teng?', answer: 8 },
+    { text: '24 + 18 nechaga teng?', answer: 42 },
+    { text: '90 − 37 nechaga teng?', answer: 53 },
+    { text: '6 × 8 nechaga teng?', answer: 48 },
+    { text: '72 ÷ 9 nechaga teng?', answer: 8 },
+    { text: 'Anvar 8 ta kitob o‘qidi. Singlisi undan 3 ta ko‘p kitob o‘qidi. Singlisi nechta kitob o‘qigan?', answer: 11 },
+    { text: 'Daraxtda 17 ta olma bor edi. 5 tasi uzildi. Nechta olma qoldi?', answer: 12 },
+    { text: 'Har bir qutida 8 tadan rangli qalam bor. 5 qutida nechta qalam bor?', answer: 40 },
+    { text: '36 ta shokolad 6 bolaga teng taqsimlandi. Har bir bola nechta shokolad oldi?', answer: 6 },
+    { text: 'Maktabda 42 ta o‘quvchi bor. 15 tasi qizlar. O‘g‘il bolalar nechta?', answer: 27 },
+    { text: 'Onasi 20 ta tuxum oldi. 8 tasi ishlatildi. Nechta tuxum qoldi?', answer: 12 },
+    { text: '4 ta likopchaning har birida 7 tadan pechenye bor. Jami nechta pechenye?', answer: 28 },
+    { text: '45 ta olma 5 ta savatga teng bo‘lindi. Har bir savatda nechta olma?', answer: 9 },
+    { text: 'Jasurda 19 ta koptok bor. Unga yana 6 ta berildi. Jami nechta koptok bo‘ldi?', answer: 25 },
+    { text: 'Bog‘da 31 ta daraxt bor edi. 9 tasi kesildi. Nechta daraxt qoldi?', answer: 22 },
+    { text: '12 + 29 nechaga teng?', answer: 41 },
+    { text: '44 − 18 nechaga teng?', answer: 26 },
+    { text: '5 × 9 nechaga teng?', answer: 45 },
+    { text: '54 ÷ 6 nechaga teng?', answer: 9 },
+    { text: '37 + 16 nechaga teng?', answer: 53 },
+    { text: '65 − 27 nechaga teng?', answer: 38 },
+    { text: '4 × 8 nechaga teng?', answer: 32 },
+    { text: '64 ÷ 8 nechaga teng?', answer: 8 },
+    { text: '28 + 35 nechaga teng?', answer: 63 },
+    { text: '100 − 45 nechaga teng?', answer: 55 },
+    { text: '7 × 8 nechaga teng?', answer: 56 },
+    { text: '81 ÷ 9 nechaga teng?', answer: 9 },
+    { text: '26 + 17 nechaga teng?', answer: 43 },
+    { text: '75 − 28 nechaga teng?', answer: 47 },
+    { text: '9 × 7 nechaga teng?', answer: 63 },
+    { text: '42 ÷ 6 nechaga teng?', answer: 7 },
+    { text: '15 + 36 nechaga teng?', answer: 51 },
+    { text: '88 − 39 nechaga teng?', answer: 49 },
+    { text: '6 × 9 nechaga teng?', answer: 54 },
+    { text: '72 ÷ 8 nechaga teng?', answer: 9 },
+    { text: 'Zuhro 14 ta gul terdi. Akasi yana 9 ta gul terdi. Jami nechta gul bo‘ldi?', answer: 23 },
+    { text: 'Do‘konda 60 ta daftar bor edi. 24 tasi sotildi. Nechta daftar qoldi?', answer: 36 },
+    { text: 'Har bir qatorda 5 tadan stul bor. 7 qatorda nechta stul bor?', answer: 35 },
+    { text: '40 ta qalam 8 o‘quvchiga teng taqsimlandi. Har biriga nechta qalam?', answer: 5 },
+    { text: 'Sardorda 27 ta yong‘oq bor edi. 11 tasini do‘stiga berdi. Nechta qoldi?', answer: 16 },
+    { text: 'Bog‘bon 18 ta gul ekdi. Ertasi yana 12 ta ekdi. Jami nechta gul ekildi?', answer: 30 },
+    { text: '6 ta qutining har birida 9 tadan shar bor. Jami nechta shar?', answer: 54 },
+    { text: '56 ta olma 7 ta savatga teng solindi. Har bir savatda nechta olma?', answer: 8 },
+    { text: 'Aziza 35 bet kitob o‘qidi. Keyin yana 20 bet o‘qidi. Jami nechta bet?', answer: 55 },
+    { text: 'Maktabda 80 ta stul bor edi. 18 tasi boshqa xonaga olib ketildi. Nechta stul qoldi?', answer: 62 }
+];
+
+let customQuestions = JSON.parse(localStorage.getItem("bilimdonCustomQuestions") || "[]");
+let questions = [...defaultQuestions, ...customQuestions];
+let current = 0;
+let score = 0;
+let answered = false;
+
+function refreshTotal() {
+    document.getElementById("total").textContent = questions.length;
+}
+
+function loadQuestion() {
+    refreshTotal();
+    document.getElementById("question").textContent = questions[current].text;
+    document.getElementById("number").textContent = current + 1;
+    document.getElementById("answer").value = "";
+    document.getElementById("result").textContent = "";
+    document.getElementById("nextButton").style.display = "none";
+    document.querySelector(".check").style.display = "inline-block";
+    document.getElementById("answer").style.display = "inline-block";
+    answered = false;
+    document.getElementById("progress").style.width =
+        (current / questions.length) * 100 + "%";
+    document.getElementById("level").textContent =
+        Math.floor(current / 10) + 1;
+    updateStars();
+}
+
+function checkAnswer() {
+    if (answered) return;
+
+    const input = document.getElementById("answer");
+    const result = document.getElementById("result");
+
+    if (input.value === "") {
+        result.textContent = "✍️ Avval javobingizni yozing!";
+        result.style.color = "orange";
+        return;
+    }
+
+    if (Number(input.value) === questions[current].answer) {
+        result.textContent = "🎉 Barakalla! To‘g‘ri javob! +10 ball";
+        result.style.color = "green";
+        score += 10;
+        document.getElementById("score").textContent = score;
+        answered = true;
+        document.querySelector(".check").style.display = "none";
+        document.getElementById("nextButton").style.display = "inline-block";
+        updateStars();
+    } else {
+        result.textContent = "❌ Xato! Yana bir bor urinib ko‘ring.";
+        result.style.color = "red";
+    }
+}
+
+function nextQuestion() {
+    current++;
+
+    if (current >= questions.length) {
+        document.getElementById("question").textContent =
+            "🎊 Tabriklaymiz! Barcha masalalarni tugatdingiz!";
+        document.getElementById("answer").style.display = "none";
+        document.querySelector(".check").style.display = "none";
+        document.getElementById("nextButton").style.display = "none";
+        document.getElementById("result").textContent =
+            "🏆 Siz " + score + " ball to‘pladingiz!";
+        document.getElementById("result").style.color = "#6c5ce7";
+        document.getElementById("progress").style.width = "100%";
+        document.getElementById("stars").textContent = "⭐⭐⭐⭐⭐";
+        return;
+    }
+    loadQuestion();
+}
+
+function updateStars() {
+    const count = Math.min(5, Math.floor(score / 50));
+    document.getElementById("stars").textContent =
+        "⭐".repeat(count) + "☆".repeat(5 - count);
+}
+
+function toggleCreator() {
+    document.getElementById("creator").classList.toggle("hidden");
+    showCustomQuestions();
+}
+
+function addQuestion() {
+    const text = document.getElementById("newQuestion").value.trim();
+    const answer = document.getElementById("newAnswer").value;
+    const msg = document.getElementById("createResult");
+
+    if (!text || answer === "") {
+        msg.textContent = "✍️ Masala va javobni kiriting.";
+        msg.style.color = "red";
+        return;
+    }
+
+    customQuestions.push({text: text, answer: Number(answer)});
+    localStorage.setItem(
+        "bilimdonCustomQuestions",
+        JSON.stringify(customQuestions)
+    );
+
+    questions = [...defaultQuestions, ...customQuestions];
+
+    document.getElementById("newQuestion").value = "";
+    document.getElementById("newAnswer").value = "";
+
+    msg.textContent = "🎉 Masala qo‘shildi! Endi u saytda ishlatiladi.";
+    msg.style.color = "green";
+
+    showCustomQuestions();
+    refreshTotal();
+}
+
+function showCustomQuestions() {
+    const list = document.getElementById("customList");
+
+    if (customQuestions.length === 0) {
+        list.innerHTML = "<p>Hali o‘zingiz tuzgan masalalar yo‘q.</p>";
+        return;
+    }
+
+    list.innerHTML = "<b>📝 Siz tuzgan masalalar:</b>" +
+        customQuestions.map((q, i) =>
+            '<div class="custom-item">' + (i + 1) + ". " +
+            escapeHtml(q.text) + "</div>"
+        ).join("");
+}
+
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.getElementById("answer").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") checkAnswer();
+});
+
+refreshTotal();
+showCustomQuestions();
+loadQuestion();
+</script>
+</body>
+</html>
